@@ -1,0 +1,9 @@
+must add 
+"menuentry 'kernel 701' {
+	insmod part_gpt
+	insmod ext2
+	search --no-floppy --file /boot/kernel --set=root 
+	multiboot /boot/kernel
+}"
+to /boot/grub/grub.cfg
+
