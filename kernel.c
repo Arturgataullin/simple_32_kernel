@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <include/ports.h>
-#include <include/idt.h>
-#include <include/keyboard.h>
+#include "include/ports.h"
+#include "include/idt.h"
+#include "include/keyboard.h"
 
 
 // VGA text output
@@ -20,6 +20,31 @@ static void putc(char c) {
 
 static void puts(const char* str) {
 	while (*str) putc(*str++);
+}
+
+void keyboard_handler_main(void) {
+	uint8_t status = read_port(0x64);
+	if ((status & 1) == 0) return;
+	uint8_t sc = read_port(0x60);
+	char c;
+	switch (sc)
+    	{
+    	case 0x02:
+        	c = '1';
+        	break;
+    	case 0x03:
+    		c = '2';
+        	break;
+    	case 0x04:
+        	c = '3';
+        	break;
+    	default:
+        	c = ' ';
+        	break;
+	}
+	
+	putc(c);
+	write_port(0x20, 0x20); // sendind EOI PIC
 }
 
 
@@ -124,7 +149,7 @@ static void pic_set_mask(uint8_t irq_line, int masked) {
 // 	load_idt(idt_ptr);
 // }	
 
-static void idt_init(void) {
+void idt_init(void) {
 	// zero IDT
 	for (int i = 0; i < 256; i++) {
 		idt[i] = (idt_entry_t){0};

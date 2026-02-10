@@ -2,10 +2,10 @@ AS=nasm
 CC=gcc
 LD=ld
 
-CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -nodefaultlibs -Include
+CFLAGS=-m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib -nodefaultlibs -Include 
 LDFLAGS=-m elf_i386 -T link.ld
 
-OBJS=boot.o ports.o isr.o kernel.o keyboard.o
+OBJS=boot.o ports.o isr.o kernel.o 
 
 all: kernel.bin
 
@@ -13,7 +13,7 @@ all: kernel.bin
 	$(AS) -f elf32 $< -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 kernel.bin: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
