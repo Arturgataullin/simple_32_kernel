@@ -53,8 +53,8 @@ void keyboard_handler_main(void) {
 typedef struct __attribute__((packed)) {
 	uint16_t off_lo;
 	uint16_t sel;
-	uint16_t zero;
-	uint16_t type_attr;
+	uint8_t zero;
+	uint8_t type_attr;
 	uint16_t off_hi;
 } idt_entry_t;
 

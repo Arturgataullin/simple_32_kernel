@@ -1,4 +1,5 @@
 bits 32
+
 section .text
 	align 4
 	dd 0x1BADB002
@@ -7,9 +8,11 @@ section .text
 
 global start
 extern kmain
+extern gdt_flush
 
 start:
 	cli
+	call gdt_flush
 	mov esp, stack_space
 	call kmain
 	hlt
