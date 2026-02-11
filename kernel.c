@@ -3,6 +3,7 @@
 #include "include/pit.h"
 #include "include/idt.h"
 #include "include/pong.h"
+#include "include/serial.h"
 
 // IDT stuctures
 
@@ -91,10 +92,11 @@ void idt_init(void) {
 }
 
 void kmain(void) {
-	puts("kernel start\n");
-	idt_init();
-	pit_init(60);
+	serial_init();
 
+	idt_init();
+	pit_init(20);
+	
 	__asm__ volatile("sti"); // включаем прерывания
 
 	pong_run();

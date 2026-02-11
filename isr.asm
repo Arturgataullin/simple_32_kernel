@@ -1,5 +1,6 @@
 global keyboard_handler
 global load_idt
+global irq0_handler
 
 extern keyboard_handler_main
 extern pit_irq0_tick
