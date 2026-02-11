@@ -1,3 +1,2 @@
-kernel
+kernel.bin
 *.o
-keyboard.c
