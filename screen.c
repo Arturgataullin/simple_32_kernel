@@ -19,16 +19,19 @@ void screen_put(int x, int y, uint8_t color, char ch) {
 
 void screen_puts(int x, int y, uint8_t color, const char* str) {
 	int i = 0;
-	while (str[i]) screen_put(x + i, y, color, str[i++]);
+	while (str[i] && i < VGA_H) {
+		screen_put(x + i, y, color, str[i]);
+		i++;
+	}
 }
 
 void screen_put_hex(int x, int y, uint8_t color, uint16_t val) {
 	const char* nums = "0123456789ABCDEF";
-	int index = 0;
-	screen_puts(x, y, color, "0x");
-	for (int i = 12; i > 0; i -= 4) {
-		screen_put(x + 2 + index, y, color, nums[(val >> i) & 0xF]);
-		index++;		
+	const char* prefix = "0x";
+	int prefix_size = 2;
+	screen_puts(x, y, color, prefix);
+	for (int i = 12; i >= 0; i -= 4) {
+		screen_put(x + prefix_size + (12 - i)/4, y, color, nums[(val >> i) & 0xF]);
 	}
 }
 

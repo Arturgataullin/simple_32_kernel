@@ -5,22 +5,24 @@
 #include "include/serial.h"
 
 static int paddle_y = 5, paddle_x = 2;
+static int paddle2_y = 5, paddle2_x = VGA_W - 3;
+
 static int ball_x = 40, ball_y = 12;
-static int bat_size = 3;
+static int bat_size = 4;
 static int vx = 1, vy = 1;
 static int upper_board = 1;
 
-static uint16_t count_of_win = 0;
-static uint16_t count_of_loose = 0;
+static uint16_t right_points = 0;
+static uint16_t left_points = 0;
 
 static void draw(void) {
     screen_clear(0x07, ' ');
-  //void screen_put_hex(int x, int y, uint8_t color, uint16_t val) 
+    
     // счетчик
-    screen_put_hex(10, 0, 0x0F, count_of_loose);
-    screen_put_hex(20, 0, 0x0f, count_of_win); 
+    screen_put_hex(10, 0, 0x0F, left_points);
+    screen_put_hex(50, 0, 0x0F, right_points); 
    
-       	// рамка 
+    // рамка 
     for (int x = 0; x < VGA_W; x++) {
         screen_put(x, upper_board, 0x0F, '#');
         screen_put(x, VGA_H - 1, 0x0F, '#');
@@ -32,7 +34,9 @@ static void draw(void) {
     // ракетка
     for (int i = 0; i < bat_size; i++) {
         screen_put(paddle_x, paddle_y + i, 0x0A, '|');
+	screen_put(paddle2_x, paddle2_y + i, 0x0A, '|');
     }
+
     // мяч
     screen_put(ball_x, ball_y, 0x0C, 'o');
 
@@ -42,8 +46,12 @@ static void draw(void) {
 
 static void update(void) {
     // управление: W=0x11, S=0x1F (set 1 scancodes)
-    if (key_down(0x11) && paddle_y > 1) paddle_y--;
-    if (key_down(0x1F) && paddle_y < VGA_H - 1 - 3) paddle_y++;
+    if (key_down(0x11) && paddle_y > upper_board + 1) paddle_y--;
+    if (key_down(0x1F) && paddle_y < VGA_H - 1 - bat_size) paddle_y++;
+
+    if (key_down(0x48) && paddle2_y > upper_board + 1) paddle2_y--;
+    if (key_down(0x50) && paddle2_y < VGA_H - 1 - bat_size) paddle2_y++;
+
 
     // движение мяча
     ball_x += vx;
@@ -54,21 +62,30 @@ static void update(void) {
     if (ball_y >= VGA_H-2) { ball_y = VGA_H-2; vy = -vy; }
 
     // отскок от правой стены
-    if (ball_x >= VGA_W-2) { ball_x = VGA_W-2; vx = -vx; }
+    // if (ball_x >= VGA_W-2) { ball_x = VGA_W-2; vx = -vx; }
 
     // столкновение с ракеткой (слева)
     if (ball_x == 3) {
-        if (ball_y >= paddle_y && ball_y < paddle_y + 3) {
+        if (ball_y >= paddle_y && ball_y < paddle_y + bat_size) {
             vx = 1; // отскок вправо
-		count_of_win++;
         }
+    } // справа 
+    if (ball_x == VGA_W - 4) {
+	    if (ball_y >= paddle2_y && ball_y < paddle2_y + bat_size) {
+		    vx = -1;
+	    }
     }
 
     // проигрыш: улетел влево
     if (ball_x <= 1) {
         ball_x = 40; ball_y = 12;
         vx = 1; vy = 1;
-	count_of_loose++;
+	right_points++;
+    }
+    if (ball_x >= VGA_W - 1) {
+	    ball_x = 40; ball_y = 12;
+	    vx = -1; vy = -1;
+		left_points++;
     }
 }
 
@@ -76,7 +93,6 @@ void pong_run(void) {
     uint32_t last = pit_ticks();
     for (;;) {
         uint32_t now = pit_ticks();
-// 	serial_print_hex(now);
 
         if (now != last) {
             last = now;
