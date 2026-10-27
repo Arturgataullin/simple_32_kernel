@@ -2,9 +2,16 @@ bits 32
 
 section .multiboot
 align 4
+
 dd 0x1BADB002
-dd 0x00
-dd -(0x1BADB002 + 0x00)
+dd 0x04
+dd -(0x1BADB002 + 0x04)
+
+dd 0, 0, 0, 0, 0
+dd 0  ; graphical mode
+dd 0  ; width: any
+dd 0  ; height: any
+dd 0  ; depth: any
 
 section .text
 global start
@@ -13,10 +20,21 @@ extern gdt_flush
 
 start:
 	cli
-	call gdt_flush
+
+    mov esi, eax
+    mov edi, ebx
 	mov esp, stack_top
-	call kmain
-	hlt
+
+	call gdt_flush
+
+	push edi
+    push esi
+    call kmain
+
+.hang:
+    cli
+    hlt
+    jmp .hang
 
 section .bss
 align 16

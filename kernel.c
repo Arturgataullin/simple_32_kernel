@@ -91,13 +91,51 @@ void idt_init(void) {
 
 }
 
-void kmain(void) {
-	serial_init();
+static void framebuffer_test(uint32_t magic, uint32_t mbi) {
+    if (magic != 0x2BADB002 || mbi == 0)
+        return;
 
-	idt_init();
-	pit_init(20);
-	
-	__asm__ volatile("sti"); // включаем прерывания
+    const volatile uint8_t *info =
+        (const volatile uint8_t *)(uintptr_t)mbi;
 
-	pong_run();
+    uint32_t flags = *(const volatile uint32_t *)(info);
+
+    if (!(flags & (1u << 12)))
+        return;
+
+    uint32_t addr = *(const volatile uint32_t *)(info + 88);
+    uint32_t addr_hi = *(const volatile uint32_t *)(info + 92);
+    uint32_t pitch = *(const volatile uint32_t *)(info + 96);
+    uint32_t width = *(const volatile uint32_t *)(info + 100);
+    uint32_t height = *(const volatile uint32_t *)(info + 104);
+
+    uint8_t bpp = info[108];
+    uint8_t type = info[109];
+
+    if (addr_hi != 0 || addr == 0 ||
+        type != 1 || bpp != 32 ||
+        width == 0 || height == 0 ||
+        width > UINT32_MAX / 4 ||
+        pitch < width * 4)
+        return;
+
+    volatile uint8_t *fb =
+        (volatile uint8_t *)(uintptr_t)addr;
+
+    for (uint32_t y = 0; y < height && y < 100; y++) {
+        volatile uint32_t *row =
+            (volatile uint32_t *)(fb + y * pitch);
+
+        for (uint32_t x = 0; x < width && x < 100; x++) {
+            row[x] = 0x0000FF00;
+        }
+    }
+}
+
+void kmain(uint32_t magic, uint32_t mbi) {
+    framebuffer_test(magic, mbi);
+
+    for (;;) {
+        __asm__ volatile("cli; hlt");
+    }
 }
