@@ -132,10 +132,13 @@ static void framebuffer_test(uint32_t magic, uint32_t mbi) {
     }
 }
 
-void kmain(uint32_t magic, uint32_t mbi) {
-    framebuffer_test(magic, mbi);
+void kmain(void) {
+	serial_init();
 
-    for (;;) {
-        __asm__ volatile("cli; hlt");
-    }
+	idt_init();
+	pit_init(20);
+
+	__asm__ volatile("sti"); // включаем прерывания
+
+	pong_run();
 }

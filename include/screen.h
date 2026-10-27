@@ -4,7 +4,11 @@
 enum {
     VGA_W = 80,
     VGA_H = 25
-}; // compile time const to use in static arrays
+};
+
+// Call once, at the start of kmain, with the Multiboot v1 EAX/EBX values.
+// Returns 1 for 32-bpp framebuffer, 0 for VGA text fallback.
+int screen_init(uint32_t multiboot_magic, uint32_t multiboot_info_addr);
 
 void screen_clear(uint8_t color, char ch);
 void screen_put(int x, int y, uint8_t color, char ch);
